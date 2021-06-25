@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>注册</title>
+	
+	<!-- vue ajax -->
+	<script src="../static/js/jquery.min.js"></script>
+	<script src="../static/js/bootstrap.min.js"></script>
+	<script src="../static/js/vue.min.js"></script>
+	<script src="../static/js/axios.min.js"></script>
+	<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+	
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="assets/media/image/favicon.png"/>
+
+    <!-- Plugin styles -->
+    <link rel="stylesheet" href="../static/vendors/bundle.css" type="text/css">
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="../static/assets/css/app.min.css" type="text/css">
+</head>
+<body class="form-membership">
+
+
+<div  class="form-wrapper">
+
+    <!-- logo -->
+    <div id="logo">
+        <img class="logo" src="../static/assets/media/image/logo.png" alt="image">
+        <img class="logo-dark" src="../static/assets/media/image/logo-dark.png" alt="image">
+    </div>
+    <!-- ./ logo -->
+
+    <h5>Create account</h5>
+	<div id="app">
+    <!-- form -->
+    <form v-show="!success">
+        <div class="form-group">
+            <input type="text" class="form-control" v-model="username" placeholder="UserName" required autofocus>
+        </div>
+		
+        <div class="form-group">
+            <input type="email" class="form-control" v-model="email" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" v-model="password" placeholder="Password" required>
+        </div>
+        <button class="btn btn-primary btn-block" @click="register">Register</button>
+        <hr>
+        <p class="text-muted">Already have an account?</p>
+        <a href="./login.html" class="btn btn-outline-light btn-sm">Sign in!</a>
+    </form>
+    <!-- ./ form -->
+	<div class="login-form" v-show="success">
+	    恭喜您！注册成功！
+	    <a href="login.html">前往登录页面</a>
+	</div>
+	</div>
+</div>
+
+<!-- Plugin scripts -->
+<script src="../static/vendors/bundle.js"></script>
+<!-- App scripts -->
+<script src="../static/assets/js/app.min.js"></script>
+
+</body>
+</html>
+
+<script>
+    //用户名正则表达式：字母开头，允许5-16字节，允许字母数字下划线
+    var regUserName = /^[a-zA-Z][a-zA-Z0-9_]{4,15}$/;
+    //密码正则表达式：以字母开头，长度在6~18之间，只能包含字母、数字和下划线
+    var regPwd = /^[a-zA-Z]\w{5,17}$/;
+    //中安全度正则表达式，字母开头，后面位数仅由字母和数字构成
+    var regpwd1 = /^[a-zA-Z]((?=.*[a-zA-Z])(?=.*[0-9])).{5,17}$/;
+    //高安全度正则表达式，字母开头，后面位数由字母、数字和下划线构成
+    var regpwd2 = /^[a-zA-Z]((?=.*[a-zA-Z])(?=.*[0-9])(?=.*[_])).{5,17}$/;
+    //邮箱的正则表达式
+    var regMail = /^[A-Za-z0-9-._]+@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,6})$/;
+
+    //取对象
+    function fuc(id) {
+        return document.getElementById(id);
+    }
+
+    //核查
+    function checkInputforReg(id, reg, msg) {
+        var input = fuc(id);
+        if (!reg.test(input.value)) {
+            fuc(id + "Tip").innerHTML = msg;
+            fuc(id + "Tip").className = "text-danger";
+            return false;
+        } else {
+            fuc(id + "Tip").innerHTML = "格式正确√";
+            fuc(id + "Tip").className = "text-success";
+            return true;
+        }
+    }
+
+    //核查
+    function checkSafety(id, reg, msg) {
+        var input = fuc(id);
+        if (!reg.test(input.value)) {
+            fuc(id + "Tip").innerHTML = msg;
+            fuc(id + "Tip").className = "text-danger";
+            return false;
+        } else {
+            if (!regpwd2.test(input.value)) {
+                if (!regpwd1.test(input.value)) {
+                    fuc(id + "Tip").innerHTML = "密码强度：低";
+                    fuc(id + "Tip").className = "text-muted";
+                    return true;
+                } else {
+                    fuc(id + "Tip").innerHTML = "密码强度：中";
+                    fuc(id + "Tip").className = "text-warning";
+                    return true;
+                }
+            } else {
+                fuc(id + "Tip").innerHTML = "密码强度：高";
+                fuc(id + "Tip").className = "text-success";
+                return true;
+            }
+        }
+    }
+
+    //核查
+    function checkPwd() {
+        if (this.vue.password == this.vue.password2) {
+            if (this.vue.password != null&&this.vue.password !="") {
+                fuc("comfirm_passwdTip").innerHTML = "两次密码一致√";
+                fuc("comfirm_passwdTip").className = "text-success";
+                return true;
+            } else {
+                fuc("comfirm_passwdTip").innerHTML = "输入密码为空";
+                fuc("comfirm_passwdTip").className = "text-danger";
+                return false;
+            }
+        } else {
+            if((this.vue.password == null&&this.vue.password2 == "")||(this.vue.password == ""&&this.vue.password2 == null)){
+                fuc("comfirm_passwdTip").innerHTML = "输入密码为空";
+                fuc("comfirm_passwdTip").className = "text-danger";
+                return false;
+            } else {
+                fuc("comfirm_passwdTip").innerHTML = "两次输入密码不一致";
+                fuc("comfirm_passwdTip").className = "text-danger";
+                return false;
+            }
+        }
+    }
+
+    //提交
+    function submitFrm() {
+        if (checkInputforReg("username", regUserName, '用户名格式不正确') &&
+            checkInputforReg("passwd", regPwd, '密码格式不正确') &&
+            checkInputforReg("mail", regMail, '邮箱格式不正确') && checkPwd()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    var vue = new Vue({
+        el: "#app",
+        data: {
+            username: null,
+            password: null,
+            password2: null,
+            email:null,
+            imgCode: null,
+			success: false,
+        },
+        methods: {
+            register: function () {
+                // if (!submitFrm()) {
+                //     alert("信息输入不正确");
+                //     return false;
+                // }
+                const formDate = new FormData();
+                formDate.append("username", this.username);
+                formDate.append("password", this.password);
+                formDate.append("email", this.email);
+                axios
+                    .post('http://localhost:8080/user', formDate)
+                    .then(response => {
+                        if (response.data.result == 1) {
+                            alert("用户名已存在！");
+                        } else if (response.data.result == 2) {
+                            alert("该邮箱已被使用！");
+                        } else if (response.data.result == 3) {
+                            alert("创建用户失败！");
+                        } else if (response.data.result == 5) {
+                            alert("验证码输入不正确！");
+                        } else {
+                            alert("注册成功!");
+                            window.location = "http://localhost:8080/";
+                        }
+                    })
+                    .catch(function (error) { // 请求失败处理
+                        console.log(error);
+                    });
+            }
+        },
+    })
+</script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function ($) {
+        setTimeout(function () {
+            $(".fade-in-effect").addClass('in');
+        }, 1);
+
+        $(document).ready(function () {
+            getCode();
+            $("#code").click(function () {
+                getCode();
+            })
+        })
+
+
+        //获取验证码
+        function getCode() {
+            $("#code").attr("src", "./createImage?code=" + Math.random());
+        }
+
+    });
+
+</script>
+
